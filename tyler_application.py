@@ -23,21 +23,7 @@ class Tweet_Preprocessor:
 
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Parameters
-            df: pandas.DataFrame
-                a dataframe with four columns whose elements are all strings or NaN
-        Returns 
-            pandas.DataFrame
-                the same dataframe with
-                    first column (dtype: a numeric type), containing numerics
-                    second column (dtype: object), containing strings
-                    third column (dtype: object), containing strings
-                    fourth column (dtype: object), containing lists of strings
-        Raises
-            TypeError
-                if type(df) != pandas.DataFrame
-            ValueError
-                if df does not have exactly four columns
+  
         """
         if type(df) != pd.DataFrame:
             raise TypeError('Please pass a pandas DataFrame')
@@ -51,6 +37,7 @@ class Tweet_Preprocessor:
         if not is_string_dtype(df[self.column_names['Tweet']]):
             raise TypeError(f'The {self.column_names['Tweet']} column contained one or more non-str values')
         
+        # continue from here
         df.iloc[:,0] = pd.to_numeric(pre_df.iloc[:,0])
 
         df.iloc[:,3] = df.iloc[:,3].apply(str.lower)
