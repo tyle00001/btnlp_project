@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from pandas.api.types import is_string_dtype 
 from nltk.sentiment import SentimentIntensityAnalyzer
 
 sia = SentimentIntensityAnalyzer() # initialize a Sentiment Intensity Analyzer
@@ -45,6 +46,11 @@ class Tweet_Preprocessor:
     
         df = df.dropna(axis = 0, subset = [self.column_names['Topic'], self.column_names['Tweet']]) # drop rows with one or more NaN values
 
+        if not is_string_dtype(df[self.column_names['Topic']]):
+            raise TypeError(f'The {self.column_names['Topic']} column contained one or more non-str values')
+        if not is_string_dtype(df[self.column_names['Tweet']]):
+            raise TypeError(f'The {self.column_names['Tweet']} column contained one or more non-str values')
+        
         df.iloc[:,0] = pd.to_numeric(pre_df.iloc[:,0])
 
         df.iloc[:,3] = df.iloc[:,3].apply(str.lower)
