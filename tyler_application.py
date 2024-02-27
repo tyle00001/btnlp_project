@@ -38,10 +38,12 @@ class Tweet_Preprocessor:
             ValueError
                 if df does not have exactly four columns
         """
+        if type(df) != pd.DataFrame:
+            raise TypeError('Please pass a pandas DataFrame')
         if self.column_names['Topic'] not in df.columns or self.column_names['Tweet'] not in df.columns: # check that necessary columns as present
             raise ValueError(f'DataFrame must have {self.column_names['Topic']} and {self.column_names['Tweet']} as column names')
     
-        df = df.dropna(axis = 0) # drop rows with one or more NaN values
+        df = df.dropna(axis = 0, subset = [self.column_names['Topic'], self.column_names['Tweet']]) # drop rows with one or more NaN values
 
         df.iloc[:,0] = pd.to_numeric(pre_df.iloc[:,0])
 
