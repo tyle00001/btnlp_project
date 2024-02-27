@@ -4,45 +4,16 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 
 sia = SentimentIntensityAnalyzer() # initialize a Sentiment Intensity Analyzer
 
-class CleanHerIHardlyKnowHer:
-    def __init__(self, path, column_names):
-        if type(path) != str:
-            raise TypeError(f'{path} is not str') 
+class Tweet_Preprocessor:
+    def __init__(self, column_names = {'Topic':'Topic','Tweet':'Tweet'}):
+        # check column_names
         if type(column_names) != list:
             raise TypeError('columns must be list')
-        if not all(isinstance(element, str) for element in column_names):
-            raise TypeError('columns must be list(str); check that all elements are str')
-        if len(column_names) != 4:
-            raise ValueError('exactly four column names are required')
-        self.path = path
+        # check values 
+        if 'Tweet' not in column_names.keys() or 'Topic' not in column_names.keys():
+            raise ValueError('If passing non-default names for "Topic" and "Tweet" columns, column_names must contain "Topic" and "Tweet" as keys')
         self.column_names = column_names
-        
-    def read_csv(self) -> pd.DataFrame:
-        """
-        Parameters
-            path: str
-                A string representing a valid filepath to a csv file
-            columns: list(str)
-                A list of four strings for the DataFrame column names
-        Returns
-            pd.DataFrame
-        Raises
-            TypeError
-                if type(path) != str
-                if type(columns) != list
-                if any element of columns is not str
-            ValueError
-                if len(columns) != 4
-            FileNotFoundError
-                if the filepath given by path doesn't need lead to a file
-        """            
-        try:
-            df = pd.read_csv(self.path, header = None, names = self.column_names, on_bad_lines = 'warn')
-        except FileNotFoundError:
-            raise FileNotFoundError('File not found')
-        else: 
-            return df
-
+    
     def __remove_non_ASCII(self, string: str) -> str:
         return re.sub('[^\x00-\x7F]',' ', string)
 
@@ -67,10 +38,8 @@ class CleanHerIHardlyKnowHer:
             ValueError
                 if df does not have exactly four columns
         """
-        if type(df) != pd.DataFrame:
-            raise TypeError('df was not a pandas DataFrame')
-        if len(df.columns) != 4:
-            raise ValueError('df did not have exactly four columns')
+        if self.column_names['Topic'] not in df.columns or self.column_names['Tweet'] not in df.columns: # check that necessary columns as present
+            raise ValueError(f'DataFrame must have {self.column_names['Topic']} and {self.column_names['Tweet']} as column names')
     
         df = df.dropna(axis = 0) # drop rows with one or more NaN values
 
