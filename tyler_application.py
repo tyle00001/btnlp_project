@@ -16,7 +16,8 @@ class Tweet_Preprocessor:
         # check values 
         if 'Tweet' not in column_names.keys() or 'Topic' not in column_names.keys():
             raise ValueError('If passing non-default names for "Topic" and "Tweet" columns, column_names must contain "Topic" and "Tweet" as keys')
-        self.column_names = column_names
+        self.topic = column_names['Topic']
+        self.tweet = column_names['Tweet']
     
     def __remove_non_ASCII(self, string: str) -> str:
         return re.sub('[^\x00-\x7F]',' ', string)
@@ -30,34 +31,34 @@ class Tweet_Preprocessor:
         """
         if type(df) != pd.DataFrame:
             raise TypeError('Please pass a pandas DataFrame')
-        if self.column_names['Topic'] not in df.columns or self.column_names['Tweet'] not in df.columns: # check that necessary columns as present
-            raise ValueError(f'DataFrame must have {self.column_names['Topic']} and {self.column_names['Tweet']} as column names')
+        if self.topic not in df.columns or self.tweet not in df.columns: # check that necessary columns as present
+            raise ValueError(f"DataFrame must have {self.topic} and {self.tweet} as column names")
     
-        df = df.dropna(axis = 0, subset = [self.column_names['Topic'], self.column_names['Tweet']]) # drop rows with one or more NaN values
+        df = df.dropna(axis = 0, subset = [self.topic, self.tweet]) # drop rows with one or more NaN values
 
         # check that both Topic and Tweet columns only contain strings
-        if not is_string_dtype(df[self.column_names['Topic']]):
-            raise TypeError(f'The {self.column_names['Topic']} column contained one or more non-str values')
-        if not is_string_dtype(df[self.column_names['Tweet']]):
-            raise TypeError(f'The {self.column_names['Tweet']} column contained one or more non-str values')
+        if not is_string_dtype(df[self.topic]):
+            raise TypeError(f'The {self.column_names["Topic"]} column contained one or more non-str values')
+        if not is_string_dtype(df[self.tweet]):
+            raise TypeError(f'The {self.column_names["Tweet"]} column contained one or more non-str values')
         
         # lowercase both Topic and Tweet columns
-        df[[self.column_names['Topic'], self.column_names['Tweet']]] = df[[self.column_names['Topic'], self.column_names['Tweet']]].apply(str.lower)
+        df[self.topic] = df[self.topic].apply(str.lower)
+        df[self.tweet] = df[self.tweet].apply(str.lower)
 
-        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(self.__remove_non_ASCII)
-        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(self.__remove_additional_whitespace)
+        df[self.tweet] = df[self.tweet].apply(self.__remove_non_ASCII).apply(self.__remove_additional_whitespace)
 
-        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(word_tokenize) # tokenize tweets
-        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(lambda x: w for w in x if w not in STOPWORDS) # remove stopwords
-        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(lambda x: " ".join(x)) # recombine lists into a single string, separated by spaces
+        df[self.tweet] = df[self.tweet].apply(word_tokenize) # tokenize tweets
+        df[self.tweet] = df[self.tweet].apply(lambda x: [w for w in x if w not in STOPWORDS]) # remove stopwords
+        df[self.tweet] = df[self.tweet].apply(lambda x: " ".join(x)) # recombine lists into a single string, separated by spaces
        
         return df
     
 
-def analyze_tweets(tweets: pd.DataFrame, sia: SentimentIntensityAnalyzer, column_names = {'Topic':'Topic','Tweet':'Tweet'}) -> pd.DataFrame:
+def analyze_tweets(twitter_data: pd.DataFrame, sia: SentimentIntensityAnalyzer, column_names = {'Topic':'Topic','Tweet':'Tweet'}) -> pd.DataFrame:
     """
     Parameters
-        tweets: pd.DataFrame
+        twitter_data: pd.DataFrame
         sia: SentimentIntensityAnalyzer
         column_names: dict
             a dictionary providing the names of the Topic and Tweet columns
@@ -73,12 +74,14 @@ def analyze_tweets(tweets: pd.DataFrame, sia: SentimentIntensityAnalyzer, column
         raise TypeError('column_names must be dict')
     if 'Tweet' not in column_names.keys() or 'Topic' not in column_names.keys(): # check that Tweet and Topic columns are present
         raise ValueError('If passing non-default names for "Topic" and "Tweet" columns, column_names must contain "Topic" and "Tweet" as keys')
-    
-    if type(tweets) != pd.DataFrame:
-        raise TypeError('tweets must be a pandas.DataFrame')
-    if column_names['Topic'] not in tweets.columns or column_names['Tweet'] not in tweets.columns: # check that necessary columns as present
-        raise ValueError(f'DataFrame must have {column_names['Topic']} and {column_names['Tweet']} as column names')
+    topic = column_names['Topic']
+    tweet = column_names['Tweet']
 
-    tweets[['Neg','Neu','Pos','Comp']] = pd.json_normalize(tweets['Content'].apply(lambda x: sia.polarity_scores(x)))
-    return tweets
+    if type(twitter_data) != pd.DataFrame:
+        raise TypeError('tweets must be a pandas.DataFrame')
+    if topic not in twitter_data.columns or tweet not in twitter_data.columns: # check that necessary columns as present
+        raise ValueError(f"DataFrame must have {topic} and {tweet} as column names")
+
+    twitter_data[['Neg','Neu','Pos','Comp']] = pd.json_normalize(twitter_data[tweet].apply(lambda x: sia.polarity_scores(x)))
+    return twitter_data
 
