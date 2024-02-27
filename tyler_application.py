@@ -32,22 +32,18 @@ class Tweet_Preprocessor:
     
         df = df.dropna(axis = 0, subset = [self.column_names['Topic'], self.column_names['Tweet']]) # drop rows with one or more NaN values
 
+        # check that both Topic and Tweet columns only contain strings
         if not is_string_dtype(df[self.column_names['Topic']]):
             raise TypeError(f'The {self.column_names['Topic']} column contained one or more non-str values')
         if not is_string_dtype(df[self.column_names['Tweet']]):
             raise TypeError(f'The {self.column_names['Tweet']} column contained one or more non-str values')
         
-        # continue from here
-        df.iloc[:,0] = pd.to_numeric(pre_df.iloc[:,0])
+        # lowercase both Topic and Tweet columns
+        df[[self.column_names['Topic'], self.column_names['Tweet']]] = df[[self.column_names['Topic'], self.column_names['Tweet']]].apply(str.lower)
 
-        df.iloc[:,3] = df.iloc[:,3].apply(str.lower)
+        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(self.__remove_non_ASCII)
+        df[self.column_names['Tweet']] = df[self.column_names['Tweet']].apply(self.__remove_additional_whitespace)
 
-        df.iloc[:,3] = df.iloc[:,3].apply(self.__remove_non_ASCII)
-
-        df.iloc[:,3] = df.iloc[:,3].apply(self.__remove_additional_whitespace)
-
-        df.iloc[:,3] = df.iloc[:,3].apply(word_tokenize)
-        
         return df
     
 
