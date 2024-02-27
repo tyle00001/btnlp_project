@@ -1,6 +1,6 @@
 import pandas as pd
+import re
 from nltk.sentiment import SentimentIntensityAnalyzer
-from textblob import TextBlob
 
 sia = SentimentIntensityAnalyzer() # initialize a Sentiment Intensity Analyzer
 
