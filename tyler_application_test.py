@@ -1,5 +1,9 @@
 import pandas as pd
+import emoji
+import re
+import matplotlib.pyplot as plt
 from nltk.sentiment import SentimentIntensityAnalyzer
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from tyler_application import TweetPreprocessor, analyze_tweets
 """
 raw = pd.read_csv('twitter_training.csv', names = ['Number','Topic','Sentiment','Tweet'])
@@ -78,6 +82,25 @@ col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
 raw = pd.read_csv('twitter_training.csv', names = col_names, encoding = 'utf-8')
 preprocessor = Twitter_Preprocessor()
 processed = preprocessor.preprocess_df(raw)
+processed['tweet'] = processed['tweet'].apply(" ".join)
 sia = SentimentIntensityAnalyzer()
-analyzed = analyze_tweets(processed, sia)
+analyzed = analyze_tweets(processed, sia, column_names={"Topic": "topic", "Tweet": "tweet"})
+
+def score_to_label(score):
+    if score < -0.25:
+        return -1
+    elif score > 0.25:
+        return 1    
+    else:
+        return 0
+
+analyzed['d_score'] = analyzed['Comp'].apply(score_to_label)
 print(analyzed.head())
+
+#disp_norm_gold = ConfusionMatrixDisplay.from_predictions(analyzed["gold_sentiment"], analyzed["d_score"], normalize='true')
+#disp_norm_gold.ax_.set_title('VADER sentiment vs gold sentiment, row normalized')
+
+disp_norm_nltk = ConfusionMatrixDisplay.from_predictions(analyzed["gold_sentiment"], analyzed["d_score"], normalize='pred')
+disp_norm_nltk.ax_.set_title('VADER sentiment vs gold sentiment, column normalized')
+
+plt.show()
