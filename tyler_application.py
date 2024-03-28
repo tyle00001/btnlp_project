@@ -10,6 +10,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 
 STOPWORDS = set(stopwords.words("english"))
 
+
 def main():
     """
     Parameters:
@@ -19,15 +20,19 @@ def main():
     Raises:
         Check
     """
-    raw = pd.read_csv('twitter_training.csv', names = ['Number','Topic','Sentiment','Tweet'])
+    raw = pd.read_csv(
+        "twitter_training.csv", names=["Number", "Topic", "Sentiment", "Tweet"]
+    )
     preprocessor = TweetPreprocessor()
     processed = preprocessor.clean_data(raw)
     sia = SentimentIntensityAnalyzer()
     analyzed = analyze_tweets(processed, sia)
-    print(analyzed.head())
-    confusion_matrix = display_confusion_matrix(analyzed["Sentiment"], analyzed["Comp"], normalize_by='true')
-    confusion_matrix.ax_.set_title('VADER sentiment vs gold sentiment, row normalized')
+    confusion_matrix = display_confusion_matrix(
+        analyzed["Sentiment"], analyzed["Comp"], normalize_by="true"
+    )
+    confusion_matrix.ax_.set_title("VADER sentiment vs gold sentiment, row normalized")
     plt.show()
+
 
 class TweetPreprocessor:
     def __init__(self, topic="Topic", tweet="Tweet"):
@@ -38,9 +43,9 @@ class TweetPreprocessor:
             tweet: str
                 this will be considered the name of the Tweet column by the TweetPreprocessor
         """
-        if type(topic) != str:
+        if not isinstance(topic, str):
             raise TypeError("topic must be a str")
-        if type(tweet) != str:
+        if not isinstance(tweet, str):
             raise TypeError("tweet must be a str")
         self.topic = topic
         self.tweet = tweet
@@ -79,7 +84,7 @@ class TweetPreprocessor:
                 if df does not have columns with the Tweet and Topic labels
                 that this Tweet_Preprocessor with initialized with
         """
-        if type(df) != pd.DataFrame:
+        if not isinstance(df, pd.DataFrame):
             raise TypeError("Please pass a pandas DataFrame")
         if self.topic not in df.columns or self.tweet not in df.columns:
             raise ValueError(
@@ -132,10 +137,10 @@ def analyze_tweets(
             with negative, neutral, positive and composite sentiment
             indicated in the Neg, Neu, Pos and Comp columns, respectively
     """
-    if type(sia) != SentimentIntensityAnalyzer:
+    if not isinstance(sia, SentimentIntensityAnalyzer):
         raise TypeError("sia must be a SentimentIntensityAnalyzer")
 
-    if type(column_names) != dict:
+    if not isinstance(column_names, dict):
         raise TypeError("column_names must be dict")
     if (
         "Tweet" not in column_names.keys() or "Topic" not in column_names.keys()
@@ -147,7 +152,7 @@ def analyze_tweets(
     topic = column_names["Topic"]
     tweet = column_names["Tweet"]
 
-    if type(twitter_data) != pd.DataFrame:
+    if not isinstance(twitter_data, pd.DataFrame):
         raise TypeError("tweets must be a pandas.DataFrame")
     if (
         topic not in twitter_data.columns or tweet not in twitter_data.columns
@@ -174,7 +179,7 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tru
         ConfusionMatrixDisplay
     """
     gold = np.select(
-        condlist=[test=='Positive',test=='Negative'],choicelist=[-1,1],default=0
+        condlist=[test == "Positive", test == "Negative"], choicelist=[-1, 1], default=0
     )
     d_scores = np.select(
         condlist=[pred < -0.25, pred > 0.25], choicelist=[-1, 1], default=0
@@ -183,5 +188,6 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tru
         gold, d_scores, normalize=normalize_by
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
