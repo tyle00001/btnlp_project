@@ -2,18 +2,9 @@ Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) S
 Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
 ************* Module tyler_application
 tyler_application.py:1:0: C0114: Missing module docstring (missing-module-docstring)
-tyler_application.py:14:0: C0115: Missing class docstring (missing-class-docstring)
-tyler_application.py:23:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:25:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:64:11: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:100:0: W0102: Dangerous default value {} as argument (dangerous-default-value)
-tyler_application.py:117:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:120:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:132:7: C0123: Use isinstance() rather than type() for a typecheck. (unidiomatic-typecheck)
-tyler_application.py:140:34: W0108: Lambda may not be necessary (unnecessary-lambda)
-tyler_application.py:4:0: W0611: Unused matplotlib.pyplot imported as plt (unused-import)
-tyler_application.py:9:0: W0611: Unused confusion_matrix imported from sklearn.metrics (unused-import)
+tyler_application.py:126:0: W0102: Dangerous default value {} as argument (dangerous-default-value)
+tyler_application.py:166:34: W0108: Lambda may not be necessary (unnecessary-lambda)
 
 ------------------------------------------------------------------
-Your code has been rated at 7.89/10 (previous run: 7.25/10, +0.64)
+Your code has been rated at 9.57/10 (previous run: 9.42/10, +0.14)
 

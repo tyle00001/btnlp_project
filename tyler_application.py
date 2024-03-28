@@ -35,6 +35,9 @@ def main():
 
 
 class TweetPreprocessor:
+    """
+    A class for preprocessing tweets
+    """
     def __init__(self, topic="Topic", tweet="Tweet"):
         """
         Parameters:
