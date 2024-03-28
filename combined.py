@@ -13,6 +13,7 @@ from transformers import pipeline
 
 STOPWORDS = set(stopwords.words("english"))
 
+
 def main():
     """
     Parameters:
@@ -35,7 +36,7 @@ def main():
     )
     confusion_matrix.ax_.set_title("VADER sentiment vs gold sentiment, row normalized")
 
-    #### Brisca's main function #### 
+    #### Brisca's main function ####
 
     # Load twitter dataset
     col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
@@ -102,6 +103,7 @@ class TweetPreprocessor:
     """
     A class for preprocessing tweets
     """
+
     def __init__(self, topic="Topic", tweet="Tweet"):
         """
         Parameters:
@@ -254,7 +256,9 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tru
     return ConfusionMatrixDisplay.from_predictions(
         gold, d_scores, normalize=normalize_by
     )
-#### Brisca's code 
+
+
+#### Brisca's code
 # Imports and downloads
 
 
@@ -504,6 +508,6 @@ class Evaluator:
         )
         disp.ax_.set_title(f"gold vs {name} predicted sentiment{normalization_comment}")
 
+
 if __name__ == "__main__":
     main()
-    
