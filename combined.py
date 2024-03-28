@@ -166,17 +166,6 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tes
 #!/usr/bin/env python
 # coding: utf-8
 
-# Imports and downloads
-
-
-nltk.download('punkt') # needed?
-nltk.download('vader_lexicon')
-
-# ### Loading the twitter data
-
-# In[ ]:
-
-
 # Load twitter dataset
 col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
 pre_df = pd.read_csv('twitter_training.csv', names=col_names, encoding="utf-8")
@@ -277,8 +266,6 @@ class TwitterPreprocessor:
 
 preprocessor = TwitterPreprocessor()
 df_tweets = preprocessor.preprocess_df(pre_df)
-df_tweets.info()
-df_tweets.head()
 
 # ### Sentiment analysis
 
@@ -395,7 +382,6 @@ my_analyzer = MySentimentAnalyzer()
 # Use the nltk based sentiment analyzer on the tweets
 # sentiment_analyzer_for_nltk = SentimentIntensityAnalyzer()
 nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
-nltk_analyzed_tweets.head()
 
 # Use the textblob based sentiment analyzer on the tweets
 textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
