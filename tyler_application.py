@@ -6,10 +6,28 @@ from pandas.api.types import is_string_dtype
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
 
 STOPWORDS = set(stopwords.words("english"))
 
+def main():
+    """
+    Parameters:
+        pee_pee: str
+    Returns:
+        poo_poo: str
+    Raises:
+        Check
+    """
+    raw = pd.read_csv('twitter_training.csv', names = ['Number','Topic','Sentiment','Tweet'])
+    preprocessor = TweetPreprocessor()
+    processed = preprocessor.clean_data(raw)
+    sia = SentimentIntensityAnalyzer()
+    analyzed = analyze_tweets(processed, sia)
+    print(analyzed.head())
+    confusion_matrix = display_confusion_matrix(analyzed["Sentiment"], analyzed["Comp"], normalize_by='true')
+    confusion_matrix.ax_.set_title('VADER sentiment vs gold sentiment, row normalized')
+    plt.show()
 
 class TweetPreprocessor:
     def __init__(self, topic="Topic", tweet="Tweet"):
@@ -142,7 +160,7 @@ def analyze_tweets(
     return twitter_data
 
 
-def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="test"):
+def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="true"):
     """
     Parameters
         test: pd.Series
@@ -150,14 +168,20 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tes
         pred: pd.Serties
             a series of predicted values
         normalize_by: str
-            possible values: 'test' or 'pred'
+            possible values: 'true' or 'pred'
             indicates whether to normalize by test or by pred
     Returns
         ConfusionMatrixDisplay
     """
+    gold = np.select(
+        condlist=[test=='Positive',test=='Negative'],choicelist=[-1,1],default=0
+    )
     d_scores = np.select(
         condlist=[pred < -0.25, pred > 0.25], choicelist=[-1, 1], default=0
     )
     return ConfusionMatrixDisplay.from_predictions(
-        test, d_scores, normalize=normalize_by
+        gold, d_scores, normalize=normalize_by
     )
+
+if __name__ == '__main__':
+    main()
