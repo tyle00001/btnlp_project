@@ -1,75 +1,84 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-get_ipython().system('pip install -q emoji')
-get_ipython().system('pip install -q jupyter-black')
-get_ipython().system('pip install -q transformers')
-
-
-# In[3]:
-
+"""
+This module dataloading, preprocessing, sentiment analysis and evaluation
+"""
 
 # Imports and downloads
+import re
 import emoji
-import jupyter_black
 import nltk
 import pandas as pd
-import re
 
-from google.colab import drive
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.metrics import ConfusionMatrixDisplay
 from textblob import TextBlob
 from transformers import pipeline
 
-nltk.download('punkt') # needed?
-nltk.download('vader_lexicon')
-
-# ### Loading the twitter data
-
-# In[ ]:
+nltk.download("vader_lexicon")
 
 
-# Load twitter dataset
-twitter_train_path = "/content/drive/My Drive/twitter_data/twitter_training.csv"
-col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
-drive.mount("/content/drive")
-pre_df = pd.read_csv(twitter_train_path, names=col_names, encoding="utf-8")
-pre_df.head()
+def main():
+    """
+    Loads dataset, performs preprocessing and sentiment analysis, displays plots to
+    compare and evaluate predictions
 
-
-# ### Preprocessing
-# 
-# My preprocessing includes:
-# 
-# - removing rows with nan values in "gold_sentiment" or "tweet" column
-# 
-# - removing rows with tweets shorter than 3 tokens (removes empty tweets and e.g.
-# single punctuation characters)
-# 
-# - removing tweets with "Irrelevant" sentiment
-# 
-# - converting sentiments "Positive", "Neutral", and "Negative" to 1, 0, and -1,
-# respectively
-# 
-# - lowercasing tweets
-# 
-# - converting emojis to strings, e.g. "👍" -> ":thumbsup:"
-# 
-# - replacing non-ASCII characters with whitespace
-# 
-# - removing additional whitespace
-# 
-# - tokenizing tweets into lists of strings
-# 
-
-# In[ ]:
-
-
-# Define class and methods for preprocessing twitter df and tweets
+    """
+    # Load twitter dataset
+    col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
+    pre_df = pd.read_csv("twitter_training.csv", names=col_names, encoding="utf-8")
+    # Preprocessing
+    preprocessor = TwitterPreprocessor()
+    df_tweets = preprocessor.preprocess_df(pre_df)
+    # Sentiment analysis
+    my_analyzer = MySentimentAnalyzer()
+    nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
+    textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
+    # The pipeline analyzer on the entire dataset takes forever (something > 45mins)
+    # The plots in the repo are based on the first 10,000 lines (takes ca 15mins)
+    # Here, I'm only runnning it on 1000
+    pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(
+        df_tweets.iloc[:1000]
+    )
+    # Compare nltk and textblob predictions
+    evaluator = Evaluator()
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+    )
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="true",
+    )
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="pred",
+    )
+    # Check accuracy of each model's predictions
+    evaluator.eval_predictions(
+        nltk_analyzed_tweets["gold_sentiment"],
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        normalization="true",
+    )
+    evaluator.eval_predictions(
+        textblob_analyzed_tweets["gold_sentiment"],
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="true",
+    )
+    evaluator.eval_predictions(
+        textblob_analyzed_tweets["gold_sentiment"].iloc[:1000],
+        pipeline_analyzed_tweets["hf_sentiment"],
+        "huggingface",
+        normalization="true",
+    )
 
 
 class TwitterPreprocessor:
@@ -87,7 +96,7 @@ class TwitterPreprocessor:
         """
         # Lowercase tweets
         preprocessed_tweet = tweet.lower()
-        # Convert emojis to strings
+        # Convert emojis to strings like "👍" -> ":thumbsup:"
         preprocessed_tweet = emoji.demojize(preprocessed_tweet)
         # Remove non-ASCII characters and fill with whitespace
         preprocessed_tweet = "".join(
@@ -138,21 +147,6 @@ class TwitterPreprocessor:
         return preprocessed_df
 
 
-# In[7]:
-
-
-preprocessor = TwitterPreprocessor()
-df_tweets = preprocessor.preprocess_df(pre_df)
-df_tweets.info()
-df_tweets.head()
-
-
-# ---
-# ### Sentiment analysis
-
-# In[ ]:
-
-
 class MySentimentAnalyzer:
     """
     Class that can perform sentiment analysis of twitter data using various
@@ -200,8 +194,7 @@ class MySentimentAnalyzer:
             " ".join
         )  # join strings again for polarity_scores to work
         analyzed_tweets[["neg", "neu", "pos", "comp"]] = pd.json_normalize(
-            analyzed_tweets["tweet"].apply(sentiment_analyzer_for_nltk.polarity_scores
-            )
+            analyzed_tweets["tweet"].apply(sentiment_analyzer_for_nltk.polarity_scores)
         )
         # Convert sentiment analysis "comp" score to numbers -1, 0, or 1
         analyzed_tweets["discrete_score"] = analyzed_tweets["comp"].apply(
@@ -249,7 +242,7 @@ class MySentimentAnalyzer:
         analyzed_tweets["tweet"] = analyzed_tweets["tweet"].str.join(" ")
         pipeline_output = sentiment_pipeline(
             analyzed_tweets["tweet"].tolist()
-        )  # output: list of dict for each tweet [{'label': 'NEGATIVE', 'score': 0.998297035694}, {...}]
+        )  # outputs list of dict for each tweet with keys "labe" and "score"
         # Extract sentiment labels from output
         pipeline_sentiments_as_labels = [output["label"] for output in pipeline_output]
         # Convert "POSITIVE", "NEGATIVE" labels to numbers (there is no neutral here)
@@ -259,48 +252,6 @@ class MySentimentAnalyzer:
             sentiment_to_num[label] for label in pipeline_sentiments_as_labels
         ]
         return analyzed_tweets
-
-
-# In[9]:
-
-
-# Instantiate my analyzer class
-my_analyzer = MySentimentAnalyzer()
-
-
-# In[10]:
-
-
-# Use the nltk based sentiment analyzer on the tweets
-# sentiment_analyzer_for_nltk = SentimentIntensityAnalyzer()
-nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
-nltk_analyzed_tweets.head()
-
-
-# In[11]:
-
-
-# Use the textblob based sentiment analyzer on the tweets
-textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
-textblob_analyzed_tweets.iloc[25:30]
-
-
-# In[ ]:
-
-
-# Use the huggingface pipeline based sentiment analyzer on the tweets
-# Running this on the entire dataset takes a long time, I stopped it after 45min
-# pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(
-#    df_tweets.iloc[:10000]
-#)  # runtime ca 15 min, this is what the plots are based on
-pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(df_tweets.iloc[:100])
-pipeline_analyzed_tweets.iloc[15:20]
-
-
-# ---
-# #### Evaluation of results
-
-# In[14]:
 
 
 class Evaluator:
@@ -337,7 +288,10 @@ class Evaluator:
 
         # Create confusion matrix plot
         disp = ConfusionMatrixDisplay.from_predictions(
-            predictions_1, predictions_2, values_format=val_format, normalize=normalization
+            predictions_1,
+            predictions_2,
+            values_format=val_format,
+            normalize=normalization,
         )
         disp.ax_.set_title(
             f"{name_1} ('True') vs {name_2} ('Pred'){normalization_comment}"
@@ -374,86 +328,5 @@ class Evaluator:
         disp.ax_.set_title(f"gold vs {name} predicted sentiment{normalization_comment}")
 
 
-# In[ ]:
-
-
-# Compare nltk and textblob predictions
-evaluator = Evaluator()
-evaluator.compare_predictions(
-    nltk_analyzed_tweets["discrete_score"],
-    "nltk",
-    textblob_analyzed_tweets["discrete_score"],
-    "textblob",
-)
-evaluator.compare_predictions(
-    nltk_analyzed_tweets["discrete_score"],
-    "nltk",
-    textblob_analyzed_tweets["discrete_score"],
-    "textblob",
-    normalization="true",
-)
-evaluator.compare_predictions(
-    nltk_analyzed_tweets["discrete_score"],
-    "nltk",
-    textblob_analyzed_tweets["discrete_score"],
-    "textblob",
-    normalization="pred",
-)
-
-# **Discussion**
-# 
-# It seems that both sentiment analyzers agree the most on which tweets to classify as
-# neutral.
-# 
-# Otherwise, it seems like there is no correlation between the predictions of both
-# models as there is no distinct diagonal in the first plot. Instead, each model has a
-# very stable distribution of scores, irrespective of the other model's prediction. For
-# example, the last plot shows that, regardless of textblob's prediction, nltk will
-# predict negative sentiment for around 25% of all tweets and neutral sentiment for
-# around 43% of all tweets. This indicates that one or both models are not very good.
-# In[ ]:
-
-
-# See how good each model's predictions are
-evaluator.eval_predictions(
-    nltk_analyzed_tweets["gold_sentiment"],
-    nltk_analyzed_tweets["discrete_score"],
-    "nltk",
-    normalization="true",
-)
-evaluator.eval_predictions(
-    textblob_analyzed_tweets["gold_sentiment"],
-    textblob_analyzed_tweets["discrete_score"],
-    "textblob",
-    normalization="true",
-)
-evaluator.eval_predictions(
-    textblob_analyzed_tweets["gold_sentiment"].iloc[:10000],
-    pipeline_analyzed_tweets["hf_sentiment"],
-    "huggingface",
-    normalization="true",
-)
-
-
-# **Discussion continued**
-# 
-# The nltk vs gold plot shows that nltk performs around the chance level, with 24-43%
-# correct predictions per category and a general tendency towards neutral.
-
-# The blob model is better: While it also tends to predict neutral sentiment more often,
-# it is better at correctly predicting positive (42%) and neutral sentiment (56%) than
-# the nltk model. It also predicts opposite sentiment only rarely (<10%). However, it
-# performs bad on tweets with negative sentiment, which it mostly classifies as
-# neutral (64%).
-# 
-# Out of the two, the textblob model should be preferred, despite not being great. (The
-# threshold I set to convert the continuous predictions to discrete labels may also
-# influence the results.)
-# 
-# The huggingface model's has a disadvantage in that it can only predict positive or
-# negative, but not neutral sentiment. However, on positive and negative tweets, it
-# performs much better than the other two models, with with 67% and 86% accuracy,
-# respectively.
-# 
-# The best analyzer overall, therefore, is the huggingface analyzer.
-# 
+if __name__ == "__main__":
+    main()
