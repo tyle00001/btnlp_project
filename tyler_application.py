@@ -10,19 +10,20 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 STOPWORDS = set(stopwords.words("english"))
 
+
 class TweetPreprocessor:
-    def __init__(self, topic = 'Topic', tweet = 'Tweet'):
+    def __init__(self, topic="Topic", tweet="Tweet"):
         """
-        Parameters: 
+        Parameters:
             topic: str
                 this will be considered the name of the Topic column by the TweetPreprocessor
             tweet: str
                 this will be considered the name of the Tweet column by the TweetPreprocessor
         """
         if type(topic) != str:
-            raise TypeError('topic must be a str')
+            raise TypeError("topic must be a str")
         if type(tweet) != str:
-            raise TypeError('tweet must be a str')
+            raise TypeError("tweet must be a str")
         self.topic = topic
         self.tweet = tweet
 
@@ -71,11 +72,11 @@ class TweetPreprocessor:
 
         if not is_string_dtype(df[self.topic]):
             raise TypeError(
-                f'The {self.topic} column contained one or more non-str values'
+                f"The {self.topic} column contained one or more non-str values"
             )
         if not is_string_dtype(df[self.tweet]):
             raise TypeError(
-                f'The {self.tweet} column contained one or more non-str values'
+                f"The {self.tweet} column contained one or more non-str values"
             )
 
         df[self.topic] = df[self.topic].apply(str.lower)
@@ -110,7 +111,7 @@ def analyze_tweets(
     Returns
         df: the same dataframe
             without the Sentiment column
-            with negative, neutral, positive and composite sentiment 
+            with negative, neutral, positive and composite sentiment
             indicated in the Neg, Neu, Pos and Comp columns, respectively
     """
     if type(sia) != SentimentIntensityAnalyzer:
@@ -122,7 +123,7 @@ def analyze_tweets(
         "Tweet" not in column_names.keys() or "Topic" not in column_names.keys()
     ):  # check that Tweet and Topic columns are present
         raise ValueError(
-            'If passing non-default names for "Topic" and "Tweet" columns,' 
+            'If passing non-default names for "Topic" and "Tweet" columns,'
             'column_names must contain "Topic" and "Tweet" as keys'
         )
     topic = column_names["Topic"]
@@ -140,11 +141,8 @@ def analyze_tweets(
     )
     return twitter_data
 
-def display_confusion_matrix(
-        test: pd.Series,
-        pred: pd.Series,
-        normalize_by = 'test'
-                        ):
+
+def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="test"):
     """
     Parameters
         test: pd.Series
@@ -158,8 +156,8 @@ def display_confusion_matrix(
         ConfusionMatrixDisplay
     """
     d_scores = np.select(
-        condlist = [pred < -0.25, pred > 0.25],
-        choicelist = [-1, 1],
-        default = 0
+        condlist=[pred < -0.25, pred > 0.25], choicelist=[-1, 1], default=0
     )
-    return ConfusionMatrixDisplay.from_predictions(test, d_scores, normalize=normalize_by)
+    return ConfusionMatrixDisplay.from_predictions(
+        test, d_scores, normalize=normalize_by
+    )
