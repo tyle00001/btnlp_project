@@ -1,12 +1,15 @@
 import re
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import emoji
 from pandas.api.types import is_string_dtype
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
+from google.colab import drive
+from textblob import TextBlob
+from transformers import pipeline
 
 STOPWORDS = set(stopwords.words("english"))
 
@@ -164,29 +167,12 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tes
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 get_ipython().system('pip install -q emoji')
 get_ipython().system('pip install -q jupyter-black')
 get_ipython().system('pip install -q transformers')
 
-
-# In[3]:
-
-
 # Imports and downloads
-import emoji
-import jupyter_black
-import nltk
-import pandas as pd
-import re
 
-from google.colab import drive
-from nltk.sentiment import SentimentIntensityAnalyzer
-from sklearn.metrics import ConfusionMatrixDisplay
-from textblob import TextBlob
-from transformers import pipeline
 
 nltk.download('punkt') # needed?
 nltk.download('vader_lexicon')
