@@ -4,7 +4,7 @@ import re
 import matplotlib.pyplot as plt
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from tyler_application import TweetPreprocessor, analyze_tweets, display_confusion_matrix
+from combined import TweetPreprocessor, analyze_tweets, display_confusion_matrix
 """
 raw = pd.read_csv('twitter_training.csv', names = ['Number','Topic','Sentiment','Tweet'])
 preprocessor = TweetPreprocessor()

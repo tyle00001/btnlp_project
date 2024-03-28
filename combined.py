@@ -7,7 +7,6 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.metrics import ConfusionMatrixDisplay
-from google.colab import drive
 from textblob import TextBlob
 from transformers import pipeline
 
@@ -117,10 +116,10 @@ def analyze_tweets(
             with negative, neutral, positive and composite sentiment
             indicated in the Neg, Neu, Pos and Comp columns, respectively
     """
-    if type(sia) != SentimentIntensityAnalyzer:
+    if isinstance(sia, SentimentIntensityAnalyzer):
         raise TypeError("sia must be a SentimentIntensityAnalyzer")
 
-    if type(column_names) != dict:
+    if isinstance(column_names, dict):
         raise TypeError("column_names must be dict")
     if (
         "Tweet" not in column_names.keys() or "Topic" not in column_names.keys()
@@ -167,10 +166,6 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tes
 #!/usr/bin/env python
 # coding: utf-8
 
-get_ipython().system('pip install -q emoji')
-get_ipython().system('pip install -q jupyter-black')
-get_ipython().system('pip install -q transformers')
-
 # Imports and downloads
 
 
@@ -183,11 +178,8 @@ nltk.download('vader_lexicon')
 
 
 # Load twitter dataset
-twitter_train_path = "/content/drive/My Drive/twitter_data/twitter_training.csv"
 col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
-drive.mount("/content/drive")
-pre_df = pd.read_csv(twitter_train_path, names=col_names, encoding="utf-8")
-pre_df.head()
+pre_df = pd.read_csv('twitter_training.csv', names=col_names, encoding="utf-8")
 
 
 # ### Preprocessing
@@ -214,9 +206,6 @@ pre_df.head()
 # 
 # - tokenizing tweets into lists of strings
 # 
-
-# In[ ]:
-
 
 # Define class and methods for preprocessing twitter df and tweets
 
@@ -286,21 +275,12 @@ class TwitterPreprocessor:
 
         return preprocessed_df
 
-
-# In[7]:
-
-
 preprocessor = TwitterPreprocessor()
 df_tweets = preprocessor.preprocess_df(pre_df)
 df_tweets.info()
 df_tweets.head()
 
-
-# ---
 # ### Sentiment analysis
-
-# In[ ]:
-
 
 class MySentimentAnalyzer:
     """
@@ -339,9 +319,9 @@ class MySentimentAnalyzer:
             sentiment_analyzer: SentimentIntensityAnalyzer object
         Returns
             analyzed_tweets: new dataframe like twitter_data with negative, neutral,
-                            positive and a composite nltk based sentiment,
-                            respectively coded in the "neg", "neu", "pos" and
-                            "comp" columns
+                positive and a composite nltk based sentiment,
+                respectively coded in the "neg", "neu", "pos" and
+                "comp" columns
         """
         analyzed_tweets = twitter_data.copy()
 
@@ -409,33 +389,17 @@ class MySentimentAnalyzer:
         ]
         return analyzed_tweets
 
-
-# In[9]:
-
-
 # Instantiate my analyzer class
 my_analyzer = MySentimentAnalyzer()
-
-
-# In[10]:
-
 
 # Use the nltk based sentiment analyzer on the tweets
 # sentiment_analyzer_for_nltk = SentimentIntensityAnalyzer()
 nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
 nltk_analyzed_tweets.head()
 
-
-# In[11]:
-
-
 # Use the textblob based sentiment analyzer on the tweets
 textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
 textblob_analyzed_tweets.iloc[25:30]
-
-
-# In[ ]:
-
 
 # Use the huggingface pipeline based sentiment analyzer on the tweets
 # Running this on the entire dataset takes a long time, I stopped it after 45min
@@ -445,12 +409,7 @@ textblob_analyzed_tweets.iloc[25:30]
 pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(df_tweets.iloc[:100])
 pipeline_analyzed_tweets.iloc[15:20]
 
-
-# ---
 # #### Evaluation of results
-
-# In[14]:
-
 
 class Evaluator:
     """
@@ -521,10 +480,6 @@ class Evaluator:
             gold_labels, predictions, values_format=val_format, normalize=normalization
         )
         disp.ax_.set_title(f"gold vs {name} predicted sentiment{normalization_comment}")
-
-
-# In[ ]:
-
 
 # Compare nltk and textblob predictions
 evaluator = Evaluator()
