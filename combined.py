@@ -1,15 +1,17 @@
 import re
 import numpy as np
 import pandas as pd
+import emoji
 import matplotlib.pyplot as plt
 from pandas.api.types import is_string_dtype
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.metrics import ConfusionMatrixDisplay
+from textblob import TextBlob
+from transformers import pipeline
 
 STOPWORDS = set(stopwords.words("english"))
-
 
 def main():
     """
@@ -20,6 +22,7 @@ def main():
     Raises:
         Check
     """
+    #### Tyler's main funciton ####
     raw = pd.read_csv(
         "twitter_training.csv", names=["Number", "Topic", "Sentiment", "Tweet"]
     )
@@ -31,6 +34,67 @@ def main():
         analyzed["Sentiment"], analyzed["Comp"], normalize_by="true"
     )
     confusion_matrix.ax_.set_title("VADER sentiment vs gold sentiment, row normalized")
+
+    #### Brisca's main function #### 
+
+    # Load twitter dataset
+    col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
+    pre_df = pd.read_csv("twitter_training.csv", names=col_names, encoding="utf-8")
+    # Preprocessing
+    preprocessor = TwitterPreprocessor()
+    df_tweets = preprocessor.preprocess_df(pre_df)
+    # Sentiment analysis
+    my_analyzer = MySentimentAnalyzer()
+    nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
+    textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
+    # The pipeline analyzer on the entire dataset takes forever (something > 45mins)
+    # The plots in the repo are based on the first 10,000 lines (takes ca 15mins)
+    # Here, I'm only runnning it on 1000
+    pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(
+        df_tweets.iloc[:1000]
+    )
+    # Compare nltk and textblob predictions
+    evaluator = Evaluator()
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+    )
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="true",
+    )
+    evaluator.compare_predictions(
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="pred",
+    )
+    # Check accuracy of each model's predictions
+    evaluator.eval_predictions(
+        nltk_analyzed_tweets["gold_sentiment"],
+        nltk_analyzed_tweets["discrete_score"],
+        "nltk",
+        normalization="true",
+    )
+    evaluator.eval_predictions(
+        textblob_analyzed_tweets["gold_sentiment"],
+        textblob_analyzed_tweets["discrete_score"],
+        "textblob",
+        normalization="true",
+    )
+    evaluator.eval_predictions(
+        textblob_analyzed_tweets["gold_sentiment"].iloc[:1000],
+        pipeline_analyzed_tweets["hf_sentiment"],
+        "huggingface",
+        normalization="true",
+    )
+
     plt.show()
 
 
@@ -190,91 +254,8 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tru
     return ConfusionMatrixDisplay.from_predictions(
         gold, d_scores, normalize=normalize_by
     )
-
-
-if __name__ == "__main__":
-    main()
-"""
-This module dataloading, preprocessing, sentiment analysis and evaluation
-"""
-
+#### Brisca's code 
 # Imports and downloads
-import re
-import emoji
-import nltk
-import pandas as pd
-
-from nltk.sentiment import SentimentIntensityAnalyzer
-from sklearn.metrics import ConfusionMatrixDisplay
-from textblob import TextBlob
-from transformers import pipeline
-
-nltk.download("vader_lexicon")
-
-
-def main():
-    """
-    Loads dataset, performs preprocessing and sentiment analysis, displays plots to
-    compare and evaluate predictions
-
-    """
-    # Load twitter dataset
-    col_names = ["tweet_id", "topic", "gold_sentiment", "tweet"]
-    pre_df = pd.read_csv("twitter_training.csv", names=col_names, encoding="utf-8")
-    # Preprocessing
-    preprocessor = TwitterPreprocessor()
-    df_tweets = preprocessor.preprocess_df(pre_df)
-    # Sentiment analysis
-    my_analyzer = MySentimentAnalyzer()
-    nltk_analyzed_tweets = my_analyzer.nltk_analyze_tweets(df_tweets)
-    textblob_analyzed_tweets = my_analyzer.textblob_analyze_tweets(df_tweets)
-    # The pipeline analyzer on the entire dataset takes forever (something > 45mins)
-    # The plots in the repo are based on the first 10,000 lines (takes ca 15mins)
-    # Here, I'm only runnning it on 1000
-    pipeline_analyzed_tweets = my_analyzer.pipeline_analyze_tweets(
-        df_tweets.iloc[:1000]
-    )
-    # Compare nltk and textblob predictions
-    evaluator = Evaluator()
-    evaluator.compare_predictions(
-        nltk_analyzed_tweets["discrete_score"],
-        "nltk",
-        textblob_analyzed_tweets["discrete_score"],
-        "textblob",
-    )
-    evaluator.compare_predictions(
-        nltk_analyzed_tweets["discrete_score"],
-        "nltk",
-        textblob_analyzed_tweets["discrete_score"],
-        "textblob",
-        normalization="true",
-    )
-    evaluator.compare_predictions(
-        nltk_analyzed_tweets["discrete_score"],
-        "nltk",
-        textblob_analyzed_tweets["discrete_score"],
-        "textblob",
-        normalization="pred",
-    )
-    # Check accuracy of each model's predictions
-    evaluator.eval_predictions(
-        nltk_analyzed_tweets["gold_sentiment"],
-        nltk_analyzed_tweets["discrete_score"],
-        "nltk",
-        normalization="true",
-    )
-    evaluator.eval_predictions(
-        textblob_analyzed_tweets["gold_sentiment"],
-        textblob_analyzed_tweets["discrete_score"],
-        "textblob",
-        normalization="true",
-    )
-    evaluator.eval_predictions(
-        textblob_analyzed_tweets["gold_sentiment"].iloc[:1000],
-        pipeline_analyzed_tweets["hf_sentiment"],
-        "huggingface",
-        normalization="true",
-    )
 
 
 class TwitterPreprocessor:
@@ -523,6 +504,6 @@ class Evaluator:
         )
         disp.ax_.set_title(f"gold vs {name} predicted sentiment{normalization_comment}")
 
-
 if __name__ == "__main__":
     main()
+    
