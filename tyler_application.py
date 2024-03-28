@@ -1,12 +1,14 @@
 import re
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from pandas.api.types import is_string_dtype
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 STOPWORDS = set(stopwords.words("english"))
-
 
 class TweetPreprocessor:
     def __init__(self, topic = 'Topic', tweet = 'Tweet'):
@@ -137,3 +139,27 @@ def analyze_tweets(
         twitter_data[tweet].apply(lambda x: sia.polarity_scores(x))
     )
     return twitter_data
+
+def display_confusion_matrix(
+        test: pd.Series,
+        pred: pd.Series,
+        normalize_by = 'test'
+                        ):
+    """
+    Parameters
+        test: pd.Series
+            a series of test values
+        pred: pd.Serties
+            a series of predicted values
+        normalize_by: str
+            possible values: 'test' or 'pred'
+            indicates whether to normalize by test or by pred
+    Returns
+        ConfusionMatrixDisplay
+    """
+    d_scores = np.select(
+        condlist = [pred < -0.25, pred > 0.25],
+        choicelist = [-1, 1],
+        default = 0
+    )
+    return ConfusionMatrixDisplay.from_predictions(test, d_scores, normalize=normalize_by)
