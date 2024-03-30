@@ -1,14 +1,13 @@
-Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
-Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
 ************* Module combined
-combined.py:38:36: C0303: Trailing whitespace (trailing-whitespace)
-combined.py:257:18: C0303: Trailing whitespace (trailing-whitespace)
-combined.py:1:0: C0114: Missing module docstring (missing-module-docstring)
-combined.py:190:0: W0102: Dangerous default value {} as argument (dangerous-default-value)
-combined.py:230:34: W0108: Lambda may not be necessary (unnecessary-lambda)
-combined.py:349:8: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
-combined.py:439:4: R0913: Too many arguments (6/5) (too-many-arguments)
+combined.py:9:0: E0401: Unable to import 'emoji' (import-error)
+combined.py:16:0: E0401: Unable to import 'textblob' (import-error)
+combined.py:17:0: E0401: Unable to import 'transformers' (import-error)
+combined.py:145:25: C0103: Argument name "df" doesn't conform to snake_case naming style (invalid-name)
+combined.py:197:0: W0102: Dangerous default value {} as argument (dangerous-default-value)
+combined.py:237:34: W0108: Lambda may not be necessary (unnecessary-lambda)
+combined.py:359:8: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+combined.py:449:4: R0913: Too many arguments (6/5) (too-many-arguments)
 
 ------------------------------------------------------------------
-Your code has been rated at 9.55/10 (previous run: 8.46/10, +1.09)
+Your code has been rated at 8.72/10 (previous run: 8.59/10, +0.13)
 
