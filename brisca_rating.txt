@@ -1,0 +1,7 @@
+************* Module brisca_application
+C0304:missing-final-newline:332,0: Final newline missing
+R1705:no-else-return:172,8: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it
+R0913:too-many-arguments:262,4: Too many arguments (6/5)
+
+------------------------------------------------------------------
+Your code has been rated at 9.69/10 (previous run: 9.68/10, +0.00)
