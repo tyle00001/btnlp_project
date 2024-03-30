@@ -1,0 +1,10 @@
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+************* Module tyler_application
+tyler_application.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tyler_application.py:126:0: W0102: Dangerous default value {} as argument (dangerous-default-value)
+tyler_application.py:166:34: W0108: Lambda may not be necessary (unnecessary-lambda)
+
+------------------------------------------------------------------
+Your code has been rated at 9.57/10 (previous run: 9.57/10, +0.00)
+
