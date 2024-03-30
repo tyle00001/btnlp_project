@@ -104,7 +104,7 @@ def main():
     plt.show()
 
 
-class TweetPreprocessor:
+class TweetPreprocessor:  # Tyler's preprocessor
     """
     A class for preprocessing tweets
     """
@@ -198,7 +198,7 @@ def analyze_tweets(
     twitter_data: pd.DataFrame,
     sia: SentimentIntensityAnalyzer,
     column_names={"Topic": "Topic", "Tweet": "Tweet"},
-) -> pd.DataFrame:
+) -> pd.DataFrame:  # Tyler's sentiment analysis function
     """
     Parameters
         twitter_data: pd.DataFrame
@@ -239,7 +239,9 @@ def analyze_tweets(
     return twitter_data
 
 
-def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="true"):
+def display_confusion_matrix(
+    test: pd.Series, pred: pd.Series, normalize_by="true"
+):  # Tyler's function for creating figures
     """
     Parameters
         test: pd.Series
@@ -264,10 +266,9 @@ def display_confusion_matrix(test: pd.Series, pred: pd.Series, normalize_by="tru
 
 
 #### Brisca's code
-# Imports and downloads
 
 
-class TwitterPreprocessor:
+class TwitterPreprocessor:  # Brisca's preprocessor
     """
     Class that can perform preprocessing of twitter dataframe and tweets
     """
@@ -333,7 +334,7 @@ class TwitterPreprocessor:
         return preprocessed_df
 
 
-class MySentimentAnalyzer:
+class MySentimentAnalyzer:  # Brisca's sentiment analysis class
     """
     Class that can perform sentiment analysis of twitter data using various
     libraries (nltk/vadar, Spacy/ textblob, and Huggingface a pipeline)
@@ -440,7 +441,7 @@ class MySentimentAnalyzer:
         return analyzed_tweets
 
 
-class Evaluator:
+class Evaluator:  # Brisca's class for creating figures
     """
     Class with methods to compare and evaluate prediictions
     """
