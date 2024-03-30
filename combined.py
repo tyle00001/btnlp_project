@@ -1,3 +1,8 @@
+"""
+This is a module for dataloading, preprocessing, sentiment analysis and evaluation
+"""
+
+# Imports and downloads
 import re
 import numpy as np
 import pandas as pd
